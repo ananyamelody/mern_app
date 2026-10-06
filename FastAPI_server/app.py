@@ -1,25 +1,9 @@
 from fastapi import FastAPI
-app=FastAPI()   
-@app.get("/getStudents")
-def getStudents():
-    return "get student method called"
 
-@app.post("/addStudent")
-def addStudent():
-    return "add student method called "
+from routes.student import student_router
+from routes.staff import staff_router
 
-@app.put("/updateStudent")
-def updateStudent():
-    return "update student method called"
+app=FastAPI()  
 
-@app.delete("/deleteStudent")
-def deleteStudent():
-    return "delete student method called"
-
-@app.get("/getParticularStudent/{userid}")
-def getParticularStudent(userid:int):
-    return {"userid":userid}
-
-@app.get("/getdeptdetails")
-def getdeptdetails(dept:str,mark:int):
-    return {"dept":dept,"mark":mark}      
+app.include_router(student_router)
+app.include_router(staff_router)
