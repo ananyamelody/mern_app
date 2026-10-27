@@ -1,4 +1,3 @@
-
 let express = require("express");
 let router = express.Router();
 let { users } = require("../models/users");
@@ -20,6 +19,15 @@ router.post("/register", async (req, res) => {
         if (!["HR", "EMPLOYEE"].includes(Role)) {
             return res.status(400).json({
                 message: "Invalid role"
+            });
+        }
+
+        // Check if the user already exists
+        let emailcheck = await users.findOne({ email: EmailID });
+
+        if (emailcheck) {
+            return res.status(409).json({
+                message: "User already exists"
             });
         }
 
@@ -57,8 +65,58 @@ router.post("/register", async (req, res) => {
     }
 });
 
-router.post("/login", (req, res) => {
-    res.send("login page called");
+router.post("/login", async (req, res) => {
+    try {
+        // Receive the fields sent by React
+        let { EmailID, Password } = req.body;
+
+        // Validate the input
+        if (!EmailID || !Password) {
+            return res.status(400).json({
+                message: "Please enter email and password"
+            });
+        }
+
+        // Check whether the user exists
+        let emailcheck = await users.findOne({ email: EmailID });
+
+        if (emailcheck) {
+
+            // Compare the entered password with the hashed password
+            let passcheck = await bcrypt.compare(
+                Password,
+                emailcheck.password
+            );
+
+            if (passcheck) {
+                return res.status(200).json({
+                    message: "Login Success",
+                    user: {
+                        _id: emailcheck._id,
+                        name: emailcheck.name,
+                        email: emailcheck.email,
+                        role: emailcheck.role
+                    }
+                });
+            } else {
+                return res.status(401).json({
+                    message: "Invalid Credentials"
+                });
+            }
+
+        } else {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+    } catch (error) {
+        console.error("Login error:", error);
+
+        return res.status(500).json({
+            message: "Login failed"
+        });
+    }
 });
 
 router.get("/viewtask", (req, res) => {

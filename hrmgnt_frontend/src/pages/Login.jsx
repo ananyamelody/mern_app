@@ -9,14 +9,21 @@ function Login() {
 
     const navigate = useNavigate();
 
-    const handleLogin = (event) => {
+    const handleLogin = async(event) => {
         event.preventDefault();
 
         if (EmailID === "admin@gmail.com" && Password === "admin") {
             setError("");
-            navigate("/userhome");
+            navigate("/adminhome");
         } else {
-            setError("Invalid Email ID or Password");
+            let req=await fetch("http://localhost:2829/api/emp/login",
+                {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({EmailID,Password})
+                });
+                let data=await req.json()
+                console.log(data);
         }
     };
 
